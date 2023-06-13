@@ -5,6 +5,7 @@ from sklearn.svm import OneClassSVM
 from skimage.io import imread
 from skimage.filters import prewitt
 import matplotlib.pyplot as plt
+from skimage import measure
 
 
 def load_images(directory):
@@ -34,10 +35,14 @@ def train_one_class_classifier(features):
 
 def detect_defects(image, clf):
     # Extract features from the test image
-    test_feature = prewitt(image)
-    plt.imshow(test_feature, cmap='gray')
+    test_feature = prewitt(image) 
+    
+
+    # plt.imshow(test_feature, cmap='gray')
+
     # Reshape the feature to match the shape of training features
     test_feature_reshaped = test_feature.reshape(1, -1)
+
     # Predict the anomaly score for the test image
     anomaly_score = clf.decision_function(test_feature_reshaped)[0]
 
@@ -79,12 +84,22 @@ while True:
     image_path = os.path.join(test_directory, f'{image_id}.jpg')
     img = imread(image_path, as_gray=True) # Convert to grayscale
     test_image = cv2.resize(img, (256, 256), interpolation=cv2.INTER_AREA)
+
+    # Draw contours around defected area
+    # This is only for drawing countours not for the defect detection for that i used OneClassSVM
+    contour = cv2.imread(image_path,cv2.IMREAD_GRAYSCALE)
+    # Prewitt 
+    kernelX = np.array([[1,1,1], [0,0,0], [-1,-1,-1]])
+    kernelY = np.array([[-1,0,1], [-1,0,1], [-1,0,1]])
+    PrewittX = cv2.filter2D(contour,-1,kernelX)
+    PrewittY = cv2.filter2D(contour,-1,kernelY)
+    Prewitt = PrewittX + PrewittY
     # Detect defects
     result = detect_defects(test_image, clf)
-    plt.axis("off")
-    plt.title(f"Defect Degree: {result}")
     print(f"Defect Degree: {result}")
-    plt.show()
+    cv2.imshow(f"Defect Degree: {result}",Prewitt)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 
