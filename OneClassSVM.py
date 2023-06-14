@@ -51,12 +51,14 @@ def detect_defects(image, clf):
     # Set a threshold to determine if the image is defective or not
     if anomaly_score < 0.002:
         return "flawless"
-    elif anomaly_score > 0.002 and anomaly_score < 0.005:
+    elif anomaly_score > 0.002 and anomaly_score < 0.004:
         return "good"
-    elif anomaly_score > 0.005 and anomaly_score < 0.007:
+    elif anomaly_score > 0.004 and anomaly_score < 0.006:
         return "average"
-    else:
+    elif anomaly_score > 0.006 and anomaly_score < 0.008:
         return "bad"
+    elif anomaly_score > 0.008:
+        return "critical"
 
 
 # Set the paths to your dataset
@@ -85,19 +87,13 @@ while True:
     img = imread(image_path, as_gray=True) # Convert to grayscale
     test_image = cv2.resize(img, (256, 256), interpolation=cv2.INTER_AREA)
 
-    # Draw contours around defected area
-    # This is only for drawing countours not for the defect detection for that i used OneClassSVM
-    contour = cv2.imread(image_path,cv2.IMREAD_GRAYSCALE)
-    # Prewitt 
-    kernelX = np.array([[1,1,1], [0,0,0], [-1,-1,-1]])
-    kernelY = np.array([[-1,0,1], [-1,0,1], [-1,0,1]])
-    PrewittX = cv2.filter2D(contour,-1,kernelX)
-    PrewittY = cv2.filter2D(contour,-1,kernelY)
-    Prewitt = PrewittX + PrewittY
+    # Print test image
+    test_img = cv2.imread(image_path)
+    
     # Detect defects
     result = detect_defects(test_image, clf)
     print(f"Defect Degree: {result}")
-    cv2.imshow(f"Defect Degree: {result}",Prewitt)
+    cv2.imshow(f"Defect Degree: {result}",test_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
